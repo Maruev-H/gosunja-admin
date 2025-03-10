@@ -1,9 +1,6 @@
-import { Box, Button, Card, Grid2, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { Button, Card, Grid2, TextField, Typography } from "@mui/material";
 
 export const Auth = () => {
-  const [otp, setOtp] = useState("");
-
   return (
     <Grid2 height={"100vh"} width={"100%"} container>
       <Card sx={{ width: 500, height: 500, margin: "auto", padding: 5 }}>
