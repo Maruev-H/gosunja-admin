@@ -13,16 +13,23 @@ import { filterOtp, filterPhoneNumber } from "../helpers/helpers";
 import Cookies from "js-cookie";
 import useAuth from "@/shared/hooks/useAuth";
 import { jwtDecode } from "jwt-decode";
+import { useLocation, useNavigate } from "react-router";
 
 export const Auth = () => {
   const { mutate: sendCode } = useSendCode();
-  const { auth, setAuth } = useAuth();
+  const { setAuth } = useAuth();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
   const { mutate: verifyCode } = useVerifyCode({
     onSuccess: (data) => {
       Cookies.set("accessToken", data.accessToken);
       Cookies.set("refreshToken", data.refreshToken);
 
       setAuth(jwtDecode(data.accessToken));
+      navigate(from, { replace: true });
     },
   });
 
@@ -30,27 +37,19 @@ export const Auth = () => {
 
   const form = useForm<FormFields>();
 
-  const { watch } = form;
-
-  console.log(watch("otp"), watch("phone"));
-
   const onSubmit = () => {
     const { phone, otp } = form.getValues();
 
     if (step === 1) {
-      console.log({ phone: filterPhoneNumber(phone) });
       sendCode({ phone: filterPhoneNumber(phone) });
       setStep(2);
       form.setValue("phone", phone, { shouldValidate: true });
     }
 
     if (step === 2) {
-      console.log({ otp: filterOtp(otp), phone: filterPhoneNumber(phone) });
       verifyCode({ otp: filterOtp(otp), phone: filterPhoneNumber(phone) });
     }
   };
-
-  console.log({ auth });
 
   return (
     <FormContainer
