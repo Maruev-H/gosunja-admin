@@ -1,12 +1,12 @@
 import { Route, Routes } from "react-router";
 import "./App.css";
-import { Home } from "@/pages/Home";
 import { Auth } from "@/pages/Auth";
 import { Sidebar } from "@/pages/layouts/Sidebar";
 import { RequireAuth } from "@/pages/layouts/RequireAuth";
 import { RoleEnum } from "@/shared/constants/roleEnum";
 import { Unauthorized } from "@/pages/Unauthorized";
 import { NotFound } from "@/pages/NotFound";
+import { Profile } from "@/pages/Profile";
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
 
       <Route element={<Sidebar />}>
         <Route element={<RequireAuth allowedRoles={[RoleEnum.ADMIN]} />}>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Profile />} />
         </Route>
       </Route>
 
