@@ -24,6 +24,7 @@
     "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.54.2",
     "react-hook-form-mui": "^7.5.0",
     "react-imask": "^7.6.1",
     "react-router": "^7.3.0",
