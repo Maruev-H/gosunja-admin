@@ -11,6 +11,7 @@ export type UserResponse = {
   banned: boolean;
   banReason: string;
   image: string;
+  address: string
   roles: [
     {
       id: number;

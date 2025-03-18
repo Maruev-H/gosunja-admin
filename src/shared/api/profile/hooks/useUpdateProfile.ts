@@ -8,6 +8,7 @@ type RequestData = {
   lastName?: string;
   patronymic?: string;
   image?: File | null;
+  address?: string
 };
 
 export const useUpdateProfile = (
@@ -17,7 +18,7 @@ export const useUpdateProfile = (
 
   return useMutation({
     ...config,
-    mutationFn: updateProdile,
+    mutationFn: updateProfile,
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: [USER_PROFILE_KEY] });
       if (config?.onSuccess) {
@@ -27,7 +28,7 @@ export const useUpdateProfile = (
   });
 };
 
-const updateProdile = async (data: RequestData) => {
+const updateProfile = async (data: RequestData) => {
   const formData = new FormData();
 
   if (typeof data.firstName !== "undefined") {
@@ -40,6 +41,10 @@ const updateProdile = async (data: RequestData) => {
 
   if (typeof data.patronymic !== "undefined") {
     formData.append("patronymic", data.patronymic);
+  }
+
+  if (typeof data.address !== "undefined") {
+    formData.append("address", data.address);
   }
 
   if (data.image) {

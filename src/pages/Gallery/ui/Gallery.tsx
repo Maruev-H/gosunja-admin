@@ -1,215 +1,106 @@
-import React, { useState } from "react";
-import { Button, Grid, Paper, Typography } from "@mui/material";
+import { useState } from "react";
+import { useDeletePhoto } from "@/shared/api/photos/hooks/useDeletePhoto";
+import { usePhotos } from "@/shared/api/photos/hooks/usePhotos";
+import { FC } from "react";
+import {
+  Box,
+  Grid,
+  Tabs,
+  Tab,
+  Button,
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  IconButton,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import { AddPhotoDialog } from "./components/AddPhotoDialog";
+import { ConfirmDeleteDialog } from "./components/ConfirmDeleteDialog";
 
-// Интерфейс для фотографии
-interface Photo {
-  id: number;
-  url: string;
-  title: string;
-}
+export const Gallery: FC = () => {
+  const [isPublic, setIsPublic] = useState(true);
+  const { data: photos } = usePhotos({ isPublic });
+  const { mutate: deletePhoto } = useDeletePhoto();
 
-export const Gallery: React.FC = () => {
-  // Состояния
-  const [mode, setMode] = useState<"personal" | "public" | null>(null); // Режим: 'personal' или 'public'
-  const [photos, setPhotos] = useState<Photo[]>([]); // Основной список фотографий
-  const [newPhotos, setNewPhotos] = useState<Photo[]>([]); // Временный список новых фотографий
-  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null); // Выбранная фотография для редактирования
+  const [openAddPhoto, setOpenAddPhoto] = useState(false);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  // Обработчик выбора режима (личное или публичное)
-  const handleModeSelect = (selectedMode: "personal" | "public") => {
-    setMode(selectedMode);
-    setSelectedPhoto(null); // Сброс выбранной фотографии при смене режима
-  };
-
-  // Обработчик загрузки фотографии
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newPhoto: Photo = {
-          id: newPhotos.length + 1, // Временный ID для новых фотографий
-          url: e.target?.result as string,
-          title: `${mode === "personal" ? "Personal" : "Public"} Photo ${
-            newPhotos.length + 1
-          }`,
-        };
-        setNewPhotos([...newPhotos, newPhoto]); // Добавляем в временный список
-      };
-      reader.readAsDataURL(file); // Чтение файла как Data URL
+  const handleDelete = () => {
+    if (deleteId) {
+      deletePhoto({ id: deleteId });
+      setOpenConfirmDelete(false);
+      setDeleteId(null);
     }
   };
 
-  // Обработчик сохранения новых фотографий
-  const handleSavePhotos = () => {
-    setPhotos([...photos, ...newPhotos]); // Добавляем новые фотографии в основной список
-    setNewPhotos([]); // Очищаем временный список
-  };
-
-  // Обработчик удаления фотографии
-  const handleDeletePhoto = (id: number) => {
-    setPhotos(photos.filter((photo) => photo.id !== id));
-  };
-
-  // Обработчик выбора фотографии для редактирования
-  const handleEditPhoto = (photo: Photo) => {
-    setSelectedPhoto(photo);
-  };
-
-  // Обработчик сохранения изменений фотографии
-  const handleSavePhoto = (updatedPhoto: Photo) => {
-    setPhotos(
-      photos.map((photo) =>
-        photo.id === updatedPhoto.id ? updatedPhoto : photo
-      )
-    );
-    setSelectedPhoto(null); // Сброс выбранной фотографии после сохранения
-  };
-
   return (
-    <div>
-      <div style={{ marginBottom: "20px" }}>
-        <Button
-          variant={mode === "personal" ? "contained" : "outlined"}
-          onClick={() => handleModeSelect("personal")}
-          style={{ marginRight: "10px" }}
-        >
-          Личное
-        </Button>
-        <Button
-          variant={mode === "public" ? "contained" : "outlined"}
-          onClick={() => handleModeSelect("public")}
-        >
-          Публичное
-        </Button>
-      </div>
-
-      {mode && (
-        <div style={{ marginBottom: "20px" }}>
-          {/* Кнопка для загрузки фотографии */}
-          <input
-            accept="image/*"
-            style={{ display: "none" }}
-            id="upload-photo"
-            type="file"
-            onChange={handleFileUpload}
-          />
-          <label htmlFor="upload-photo">
-            <Button
-              variant="contained"
-              component="span"
-              style={{ marginRight: "10px" }}
-            >
-              Добавить
-            </Button>
-          </label>
-          {/* Кнопка для сохранения новых фотографий */}
-          {newPhotos.length > 0 && (
-            <Button
-              variant="contained"
-              onClick={handleSavePhotos}
-              style={{ marginRight: "10px" }}
-            >
-              Сохранить
-            </Button>
-          )}
-          {selectedPhoto && (
-            <>
-              <Button
-                variant="contained"
-                onClick={() =>
-                  handleSavePhoto({ ...selectedPhoto, title: "Updated Title" })
-                }
-                style={{ marginRight: "10px" }}
-              >
-                Сохранить изменения
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => setSelectedPhoto(null)}
-              >
-                Отменить
-              </Button>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Отображение новых фотографий (ещё не сохранённых) */}
-      {newPhotos.length > 0 && (
-        <div>
-          <Typography variant="h6" style={{ marginBottom: "10px" }}>
-            Новые фотографии:
-          </Typography>
-          <Grid container spacing={2}>
-            {newPhotos.map((photo) => (
-              <Grid item key={photo.id} xs={12} sm={6} md={4}>
-                <Paper style={{ padding: "10px" }}>
-                  <img
-                    src={photo.url}
-                    alt={photo.title}
-                    style={{ width: "100%", height: "auto" }}
-                  />
-                  <Typography variant="subtitle1" align="center">
-                    {photo.title}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </div>
-      )}
-
-      {/* Отображение сохранённых фотографий */}
-      <Typography
-        variant="h6"
-        style={{ marginTop: "20px", marginBottom: "10px" }}
+    <Box sx={{ padding: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          pb: 2,
+          borderBottom: "2px solid #ddd",
+        }}
       >
-        Сохранённые фотографии:
-      </Typography>
-      <Grid container spacing={2}>
-        {photos
-          .filter((photo) =>
-            mode === "personal"
-              ? photo.title.includes("Personal")
-              : photo.title.includes("Public")
-          )
-          .map((photo) => (
-            <Grid item key={photo.id} xs={12} sm={6} md={4}>
-              <Paper style={{ padding: "10px" }}>
-                <img
-                  src={photo.url}
-                  alt={photo.title}
-                  style={{ width: "100%", height: "auto" }}
-                />
-                <Typography variant="subtitle1" align="center">
-                  {photo.title}
-                </Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    marginTop: "10px",
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    onClick={() => handleEditPhoto(photo)}
-                    style={{ marginRight: "10px" }}
+        <Tabs
+          value={isPublic ? 0 : 1}
+          onChange={(_, value) => setIsPublic(value === 0)}
+        >
+          <Tab label="Публичные фото" />
+          <Tab label="Личные фото" />
+        </Tabs>
+        <Button
+          variant="contained"
+          startIcon={<AddPhotoAlternateIcon />}
+          onClick={() => setOpenAddPhoto(true)}
+        >
+          Добавить фото
+        </Button>
+      </Box>
+
+      <Grid container spacing={2} sx={{ mt: 2 }}>
+        {photos?.map((photo) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={photo.id}>
+            <Card>
+              <CardMedia
+                component="img"
+                height="200"
+                image={photo.url}
+                alt="Фото"
+              />
+              <CardContent>
+                <Typography variant="body2">{photo.description}</Typography>
+                {!isPublic && (
+                  <IconButton
+                    color="error"
+                    onClick={() => {
+                      setOpenConfirmDelete(true);
+                      setDeleteId(photo.id);
+                    }}
                   >
-                    Изменить
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => handleDeletePhoto(photo.id)}
-                  >
-                    Удалить
-                  </Button>
-                </div>
-              </Paper>
-            </Grid>
-          ))}
+                    <DeleteIcon />
+                  </IconButton>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
-    </div>
+
+      <AddPhotoDialog
+        open={openAddPhoto}
+        onClose={() => setOpenAddPhoto(false)}
+      />
+      <ConfirmDeleteDialog
+        open={openConfirmDelete}
+        onClose={() => setOpenConfirmDelete(false)}
+        onConfirm={handleDelete}
+      />
+    </Box>
   );
 };

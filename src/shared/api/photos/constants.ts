@@ -1,0 +1,1 @@
+export const getPhotosKey = (isPublic: boolean) => `PHOTOS_KEY_${isPublic ? 'public' : 'my'}`

@@ -24,14 +24,20 @@ function App() {
       >
         <Route element={<Sidebar />}>
           <Route path="/" element={<Profile />} />
+        </Route>
+      </Route>
+
+      <Route element={<RequireAuth allowedRoles={[RoleEnum.ADMIN]} />}>
+        <Route element={<Sidebar />}>
           <Route path="/accounts" element={<Accounts />} />
         </Route>
       </Route>
 
+
       <Route
         element={
           <RequireAuth
-            allowedRoles={[RoleEnum.ESTABLISHMENT, RoleEnum.ADMIN]}
+            allowedRoles={[RoleEnum.ESTABLISHMENT]}
           />
         }
       >

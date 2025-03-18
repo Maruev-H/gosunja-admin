@@ -57,6 +57,7 @@ export const Profile = () => {
         firstName: data.firstName || "",
         lastName: data.lastName || "",
         patronymic: data.patronymic || "",
+        address: data.address || "",
       });
     }
   }, [data, form]);
@@ -143,7 +144,7 @@ export const Profile = () => {
         <Typography variant="body2">
           Роль:{" "}
           {data?.roles?.length
-            ? data.roles.map((r) => r.value).join(", ")
+            ? data.roles.map((r) => r.description).join(", ")
             : "Нет ролей"}
         </Typography>
         <Typography variant="body2">

@@ -1,26 +1,34 @@
+import { Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 export const columns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 70 },
-  { field: "phone", headerName: "Phone", width: 150 },
-  { field: "firstName", headerName: "First Name", width: 130 },
-  { field: "lastName", headerName: "Last Name", width: 130 },
-  { field: "patronymic", headerName: "Patronymic", width: 130 },
+  { field: "id", headerName: "ИНН", width: 70 },
+  { field: "phone", headerName: "Телефон", width: 150 },
+  { field: "firstName", headerName: "Имя", width: 130 },
+  { field: "lastName", headerName: "Фамилия", width: 130 },
+  { field: "patronymic", headerName: "Отчество", width: 130 },
   {
     field: "banned",
-    headerName: "Banned",
+    headerName: "Заблокирован",
     width: 100,
-    renderCell: (params) => (params.value ? "Да" : "Нет"),
+    renderCell: (params) =>
+      params.value ? (
+        <Typography color="error" variant="inherit">
+          Да
+        </Typography>
+      ) : (
+        "Нет"
+      ),
   },
   {
     field: "banReason",
-    headerName: "Ban Reason",
+    headerName: "Причина блокировки",
     width: 180,
     renderCell: (params) => params.value || "Не забанен",
   },
   {
     field: "image",
-    headerName: "Image",
+    headerName: "Аватарка",
     width: 150,
     renderCell: (params) =>
       params.value ? (
@@ -35,21 +43,21 @@ export const columns: GridColDef[] = [
   },
   {
     field: "createdAt",
-    headerName: "Created At",
+    headerName: "Дата создания",
     width: 180,
     type: "dateTime",
     valueGetter: (params) => new Date(params),
   },
   {
     field: "updatedAt",
-    headerName: "Updated At",
+    headerName: "Дата обновления",
     width: 180,
     type: "dateTime",
     valueGetter: (params) => new Date(params),
   },
   {
     field: "roles",
-    headerName: "Roles",
+    headerName: "Роли",
     width: 180,
     renderCell: (params) => (
       <div>{params.value?.map((role: any) => role.value).join(", ")}</div>
