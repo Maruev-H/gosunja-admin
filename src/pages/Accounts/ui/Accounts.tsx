@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridRowParams } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -7,24 +7,35 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import { Box, Avatar, Typography, Stack } from "@mui/material";
 import { columns } from "../helpers/helpers.tsx";
 import { useUsers } from "@/shared/api/users/hooks/useUsers";
+import { useUserRoles } from "@/shared/api/users/hooks/useUserRoles.ts";
+import { useBanUser } from "@/shared/api/users/hooks/useBanUser";
+import { useSetUserRole } from "@/shared/api/users/hooks/useSetUserRole";
 import { LoadingPage } from "@/pages/LoadingPage";
-import { Box, Checkbox, FormControlLabel } from "@mui/material";
+import { User, UserRole } from "@/shared/api/users/types.ts";
 
 const paginationModel = { page: 0, pageSize: 5 };
 
 export const Accounts = () => {
   const { data, isLoading } = useUsers();
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [banReason, setBanReason] = useState("");
-  const [roles, setRoles] = useState<any[]>([]);
+  const { data: rolesData } = useUserRoles();
+  const { mutate: banUser } = useBanUser();
+  const { mutate: setUserRole } = useSetUserRole();
 
-  const handleRowClick = (params: any) => {
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [banReason, setBanReason] = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<
+    { id: number; value: string; description: string }[]
+  >([]);
+
+  const handleRowClick = (params: GridRowParams<User>) => {
     setSelectedUser(params.row);
     setBanReason(params.row.banReason || "");
-    setRoles(params.row.roles || []);
+    setSelectedRoles(params.row.roles || []);
     setOpenModal(true);
   };
 
@@ -32,20 +43,32 @@ export const Accounts = () => {
     setOpenModal(false);
     setSelectedUser(null);
     setBanReason("");
-    setRoles([]);
+    setSelectedRoles([]);
   };
 
   const handleBanUser = () => {
-    console.log(`User ${selectedUser.id} banned for: ${banReason}`);
+    if (!selectedUser) return;
+
+    if (selectedUser.banned) {
+      console.log(`User ${selectedUser.id} unbanned`);
+    } else {
+      banUser({ userId: selectedUser.id, banReason });
+    }
     setOpenModal(false);
   };
 
-  const handleRoleChange = (event: React.ChangeEvent<HTMLInputElement>, role: string) => {
-    if (event.target.checked) {
-      setRoles((prevRoles) => [...prevRoles, role]);
-    } else {
-      setRoles((prevRoles) => prevRoles.filter((r) => r !== role));
-    }
+  const handleSetRoles = (newRoles: UserRole[]) => {
+    if (!selectedUser) return;
+
+    const userRoles = selectedUser.roles.map((item) => item.value);
+
+    setSelectedRoles(newRoles);
+
+    newRoles.forEach((role) => {
+      if (!userRoles.includes(role.value)) {
+        setUserRole({ userId: selectedUser.id, value: role.value });
+      }
+    });
   };
 
   if (isLoading) return <LoadingPage />;
@@ -63,76 +86,101 @@ export const Accounts = () => {
         />
       </Paper>
 
-      {/* Modal to display user data */}
-      <Dialog open={openModal} onClose={handleCloseModal}>
-        <DialogTitle>Редактирование пользователя</DialogTitle>
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Данные пользователя</DialogTitle>
         <DialogContent>
           {selectedUser && (
-            <Box>
-              <TextField
-                label="Имя"
-                value={selectedUser.firstName || ""}
-                fullWidth
-                margin="normal"
-                disabled
-              />
-              <TextField
-                label="Фамилия"
-                value={selectedUser.lastName || ""}
-                fullWidth
-                margin="normal"
-                disabled
-              />
-              <TextField
-                label="Отчество"
-                value={selectedUser.patronymic || ""}
-                fullWidth
-                margin="normal"
-                disabled
-              />
-              <TextField
-                label="Телефон"
-                value={selectedUser.phone || ""}
-                fullWidth
-                margin="normal"
-                disabled
-              />
-              <TextField
-                label="Адрес"
-                value={selectedUser.address || ""}
-                fullWidth
-                margin="normal"
-                disabled
-              />
-              <TextField
-                label="Причина блокировки"
-                value={banReason}
-                fullWidth
-                margin="normal"
-                onChange={(e) => setBanReason(e.target.value)}
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={2}
+            >
+              <Avatar
+                src={selectedUser.image || ""}
+                alt="User Image"
+                sx={{
+                  width: 120,
+                  height: 120,
+                  marginBottom: 2,
+                  border: "3px solid #ccc",
+                }}
               />
 
-              <Box>
-                <h4>Роли:</h4>
-                {["Admin", "User", "Moderator"].map((role) => (
-                  <FormControlLabel
-                    key={role}
-                    control={
-                      <Checkbox
-                        checked={roles.includes(role)}
-                        onChange={(e) => handleRoleChange(e, role)}
-                      />
-                    }
-                    label={role}
+              <Stack spacing={1} width="100%">
+                <Typography variant="subtitle1">
+                  <strong>Имя:</strong> {selectedUser.firstName}
+                </Typography>
+                <Typography variant="subtitle1">
+                  <strong>Фамилия:</strong> {selectedUser.lastName}
+                </Typography>
+                <Typography variant="subtitle1">
+                  <strong>Отчество:</strong> {selectedUser.patronymic}
+                </Typography>
+                <Typography variant="subtitle1">
+                  <strong>Телефон:</strong> {selectedUser.phone}
+                </Typography>
+              </Stack>
+
+              <Box width="100%">
+                {selectedUser.banned && (
+                  <Typography
+                    color="error"
+                    sx={{ fontWeight: "bold", textAlign: "center", mb: 1 }}
+                  >
+                    Пользователь заблокирован
+                  </Typography>
+                )}
+                <Stack direction="row" spacing={1}>
+                  <TextField
+                    label="Причина блокировки"
+                    value={banReason}
+                    onChange={(e) => setBanReason(e.target.value)}
+                    fullWidth
+                    sx={{ flex: "3" }}
                   />
-                ))}
+                  <Button
+                    sx={{ flex: "1" }}
+                    variant="contained"
+                    color={selectedUser.banned ? "success" : "error"}
+                    onClick={handleBanUser}
+                  >
+                    {selectedUser.banned ? "Разблокировать" : "Заблокировать"}
+                  </Button>
+                </Stack>
               </Box>
+
+              <Autocomplete
+                multiple
+                options={rolesData || []}
+                getOptionLabel={(option) => option.description}
+                value={
+                  rolesData?.filter((role) =>
+                    selectedRoles.some((selected) => selected.id === role.id)
+                  ) || []
+                }
+                fullWidth
+                onChange={(_event, newValue) => handleSetRoles(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Роли"
+                    placeholder="Выберите роли"
+                    fullWidth
+                  />
+                )}
+                sx={{ marginTop: 2 }}
+              />
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModal}>Закрыть</Button>
-          <Button onClick={handleBanUser}>Заблокировать</Button>
         </DialogActions>
       </Dialog>
     </>

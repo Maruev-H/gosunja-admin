@@ -53,6 +53,10 @@ export const Unauthorized = () => {
         <Button variant="contained" color="primary" onClick={() => navigate("/")}>
           На главную
         </Button>
+
+        <Button variant="outlined" color="primary" onClick={() => navigate("/auth")}>
+          Сменить пользователя
+        </Button>
       </Stack>
     </Box>
   );

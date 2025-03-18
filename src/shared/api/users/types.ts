@@ -1,5 +1,11 @@
 import { RoleEnum } from "@/shared/constants/roleEnum";
 
+export type UserRole = {
+  id: number;
+  value: RoleEnum;
+  description: string;
+};
+
 export type User = {
   id: number;
   phone: string;
@@ -10,14 +16,10 @@ export type User = {
   banned: true;
   banReason: string;
   image: string;
+  roles: UserRole[]
 };
 
 export type UsersResponse = User[];
 
-export type UserRole = {
-  id: number;
-  value: RoleEnum;
-  description: string;
-};
 
 export type UserRolesResponse = UserRole[];
