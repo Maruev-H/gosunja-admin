@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { TextFieldElement, FormContainer, useForm } from "react-hook-form-mui";
-import { Button, Typography, IconButton, Avatar } from "@mui/material";
+import { Button, Typography, IconButton, Avatar, Box } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -69,7 +69,7 @@ export const Profile = () => {
       onSuccess={handleSave}
       defaultValues={getDefaultValues(data)}
     >
-      <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
+      <Box style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
         <div
           style={{
             display: "flex",
@@ -116,6 +116,13 @@ export const Profile = () => {
           margin="normal"
           disabled={!editMode}
         />
+        <TextFieldElement
+          name="address"
+          label="Адрес"
+          fullWidth
+          margin="normal"
+          disabled={!editMode}
+        />
 
         {editMode && (
           <Button
@@ -146,7 +153,7 @@ export const Profile = () => {
           Последнее обновление:{" "}
           {new Date(data?.updatedAt ?? "").toLocaleString()}
         </Typography>
-      </div>
+      </Box>
     </FormContainer>
   );
 };

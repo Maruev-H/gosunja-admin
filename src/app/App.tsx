@@ -7,6 +7,7 @@ import { RoleEnum } from "@/shared/constants/roleEnum";
 import { Unauthorized } from "@/pages/Unauthorized";
 import { NotFound } from "@/pages/NotFound";
 import { Profile } from "@/pages/Profile";
+import { Accounts } from "@/pages/Accounts";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route element={<Sidebar />}>
         <Route element={<RequireAuth allowedRoles={[RoleEnum.ADMIN]} />}>
           <Route path="/" element={<Profile />} />
+          <Route path="/accounts" element={<Accounts />} />
         </Route>
       </Route>
 

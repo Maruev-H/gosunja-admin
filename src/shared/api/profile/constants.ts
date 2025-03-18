@@ -1,1 +1,1 @@
-export const USER_PROFILE_KEY = 'userProfile'
+export const USER_PROFILE_KEY = 'USER_PROFILE_KEY'
